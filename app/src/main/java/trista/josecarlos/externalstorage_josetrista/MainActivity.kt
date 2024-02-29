@@ -17,10 +17,10 @@ import java.io.InputStreamReader
 
 
 class MainActivity : AppCompatActivity()  {
-    var inputText: EditText? = null
-    var response: TextView? = null
-    var saveButton: Button? = null
-    var readButton:android.widget.Button? = null
+    lateinit var inputText: EditText
+    lateinit var response: TextView
+    lateinit var saveButton: Button
+    lateinit var readButton:Button
 
     private val filename = "SampleFile.txt"
     private val filepath = "MyFileStorage"
@@ -33,36 +33,32 @@ class MainActivity : AppCompatActivity()  {
         inputText = findViewById<View>(R.id.myInputText) as EditText
         response = findViewById<View>(R.id.response) as TextView
         saveButton = findViewById<View>(R.id.saveExternalStorage) as Button
-        saveButton!!.setOnClickListener {
+        saveButton.setOnClickListener {
             try {
                 val fos = FileOutputStream(myExternalFile)
-                fos.write(inputText!!.text.toString().toByteArray())
+                fos.write(inputText.text.toString().toByteArray())
                 fos.close()
             } catch (e: IOException) {
                 e.printStackTrace()
             }
-            inputText!!.setText("")
-            response!!.text = "SampleFile.txt saved to External Storage..."
+            inputText.setText("")
+            response.text = "SampleFile.txt saved to External Storage..."
         }
         readButton = findViewById<View>(R.id.getExternalStorage) as Button
-        readButton!!.setOnClickListener(View.OnClickListener {
+        readButton.setOnClickListener {
             try {
+                myData = "" // Reiniciar myData a una cadena vacía
                 val fis = FileInputStream(myExternalFile)
-                val `in` = DataInputStream(fis)
-                val br = BufferedReader(InputStreamReader(`in`))
-                var strLine: String
-                while (br.readLine().also { strLine = it } != null) {
-                    myData = myData + strLine
-                }
-                `in`.close()
+                val br = BufferedReader(InputStreamReader(fis))
+                myData = br.use { it.readText() }
             } catch (e: IOException) {
                 e.printStackTrace()
             }
-            inputText!!.setText(myData)
-            response!!.text = "SampleFile.txt data retrieved from Internal Storage..."
-        })
+            inputText.setText(myData)
+            response.text = "SampleFile.txt data retrieved from External Storage..."
+        }
         if (!isExternalStorageAvailable() || isExternalStorageReadOnly()) {
-            saveButton!!.isEnabled = false
+            saveButton.isEnabled = false
         } else {
             myExternalFile = File(getExternalFilesDir(filepath), filename)
         }
